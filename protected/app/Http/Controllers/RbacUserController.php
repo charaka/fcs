@@ -1,0 +1,174 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\User;
+use App\rbacRole;
+use App\rbacRoleUser;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+
+use DB;
+use DataTables;
+
+class RbacUserController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
+    
+    public function index()
+    {
+        //
+        return view('rbacUser.index');
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
+        $data['rbac_user'] = new User;
+        $data['role'] = rbacRole::all();
+        return view('rbacUser.create')->with($data);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        //
+
+
+
+    	$user = new User;
+
+    	$user->name = $request->name;
+    	$user->email = $request->email;
+    	$user->password = Hash::make($request->password);
+    	$role = $request->role_id;
+    	if($user->save()){
+    		$rolex = new rbacRoleUser;
+    		if(!empty($role)){
+    			foreach ($role as $key => $value) {
+                    $ins = DB::table('rbac_role_users')->insert(['id_user'=>$user->id,'role_id'=>$value]);
+                }
+    		}else{
+
+    		}
+    	}
+
+    	return redirect('rbac_user');
+
+
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\rbacUser  $rbacUser
+     * @return \Illuminate\Http\Response
+     */
+    public function show(User $User,$id)
+    {
+        //
+        $data['rbac_user'] = User::find($id);
+        return view('rbacUser.show')->with($data);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  \App\User  $User
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(User $User,$id)
+    {
+        //
+        $data['id'] = $id;
+        $data['rbac_user'] = User::find($id);
+        $data['role'] = rbacRole::all();
+        return view('rbacUser.edit')->with($data);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\User  $User
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, User $User,$id)
+    {
+        //
+
+        $user = User::find($id);
+
+        $user->name = $request->name;
+        $user->email = $request->email;
+        // $user->password = Hash::make($request->password);
+        $role = $request->role_id;
+        if($user->save()){
+            if(count($role)>0){
+                $del =rbacRoleUser::where('id_user',$user->id)->delete();
+                foreach ($role as $key => $value) {
+                    $ins = DB::table('rbac_role_users')->insert(['id_user'=>$user->id,'role_id'=>$value]);
+                }
+           }
+        }
+
+        return redirect('rbac_user');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\User  $User
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(User $User)
+    {
+        //
+    }
+
+
+    public function listing(Request $request){
+    	DB::statement(DB::raw('set @rownum = 0'));
+        $data = USer::select([DB::raw('@rownum  := @rownum  + 1 AS no'),'id', 'name', 'email']);
+
+        $datatables = Datatables::of($data);
+        if ($keyword = $request->get('search')['value']) {
+            $datatables->filterColumn('no', function($query, $keyword) {
+                $sql = "@rownum  + 1 like ?";
+                $query->whereRaw($sql, ["%{$keyword}%"]);
+            });
+        }
+
+        return $datatables
+        ->addcolumn('action','
+                <a class="btn btn-xs btn-info btn-flat" href="{{ url("rbac_user/$id") }}" data-toggle="tooltip" title="Info Data">
+                    <i class="fa fa-info-circle"></i>
+                </a>
+                <a class="btn btn-xs btn-warning btn-flat" href="{{ url("rbac_user/$id/edit") }}" data-toggle="tooltip" title="Edit Data">
+                    <i class="fa fa-pencil"></i>
+                </a>
+                <a class="btn btn-xs btn-danger btn-flat" data-toggle="tooltip" onclick="delete_data({{ $id }})" title="Delete"><i class="fa fa-times"></i></a>
+            ')
+        ->rawColumns(['action'])
+        ->make(true);
+    }
+}
