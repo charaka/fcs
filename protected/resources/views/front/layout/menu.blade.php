@@ -1,5 +1,5 @@
 <nav class="navbar navbar-expand-md fixed-top" id="fcs-navbar">
-    <a class="navbar-brand" href="http://fcs.wiryasoftware.com/">
+    <a class="navbar-brand" href="{{ url('/')}}">
         <img src="http://fcs.wiryasoftware.com/assets/images/fcs-white.png">
     </a>
     <button style="border-color: white" class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">

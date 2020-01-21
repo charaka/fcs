@@ -151,4 +151,19 @@ class PublicController extends Controller
 
         return view('front.lokasi.index')->with($data);
     }
+
+    public function kategori_front($id){
+        return view('front.kategori.index');
+    }
+
+    public function about(Request $request){
+        return view('front.about.index');
+    }
+
+    public function human(Request $request){
+        return view('front.human.index');
+    }
+    public function annual(Request $request){
+        return view('front.annual.index');
+    }
 }

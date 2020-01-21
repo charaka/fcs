@@ -13,6 +13,10 @@
 
 Route::get('/', 'PublicController@index');
 Route::get('/lokasis/{id}','PublicController@lokasi_front');
+Route::get('/kategori/{id}','PublicController@kategori_front');
+Route::get('/about-us','PublicController@about');
+Route::get('/humans_future_city_summit','PublicController@human');
+Route::get('/annual-meet','PublicController@annual');
 
 
 Auth::routes();
